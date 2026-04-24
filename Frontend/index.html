@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LyricistAI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <nav style="display: flex; justify-content: flex-end; padding: 10px 0;">
+            <a href="login.html" id="authNav" style="text-decoration: none; color: #666; font-weight: 500;">Sign In</a>
+        </nav>
+        <header>
+            <h1>Vocal Harmony Generator</h1>
+            <p>Upload a melody, get the choir.</p>
+        </header>
+
+        <section class="upload-section">
+            <input type="file" id="audioUpload" accept="audio/mp3">
+            <textarea id="lyricsInput" placeholder="Paste lyrics here..."></textarea>
+            <button id="generateBtn">Generate Harmonies</button>
+        </section>
+
+        <hr>
+
+        <section class="mixer-interface">
+            <h2>Mixer & Solfege</h2>
+            <div id="tracksContainer">
+                </div>
+        </section>
+
+        <section class="solfege-display">
+            <h3>Visual Solfege</h3>
+            <div id="solfegeOutput" class="solfege-box">
+                Waiting for generation...
+            </div>
+        </section>
+    </div>
+    <script>
+        // Simple session management
+        document.addEventListener('DOMContentLoaded', () => {
+            const authNav = document.getElementById('authNav');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (isLoggedIn) {
+                const email = localStorage.getItem('userEmail');
+                authNav.textContent = `Logout (${email})`;
+                authNav.href = '#';
+                authNav.onclick = () => {
+                    localStorage.clear();
+                    location.reload();
+                };
+            }
+        });
+    </script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+
+    <script src="app.js"></script>
+</body>
+</html>
