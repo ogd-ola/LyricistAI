@@ -1,0 +1,5 @@
+frontend/config.js
+node_modules/
+.DS_Store
+*.mp3 # Ignore generated audio files
+*.wav # Ignore generated audio files

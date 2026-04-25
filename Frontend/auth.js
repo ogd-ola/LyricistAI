@@ -44,10 +44,24 @@ document.addEventListener('DOMContentLoaded', () => {
     authForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
         
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userEmail', email);
-        
-        window.location.href = 'index.html';
+        if (isLoginMode) {
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    window.location.href = 'index.html';
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        } else {
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then(() => {
+                    window.location.href = 'index.html';
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
     });
 });
