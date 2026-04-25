@@ -3,3 +3,11 @@ node_modules/
 .DS_Store
 *.mp3 # Ignore generated audio files
 *.wav # Ignore generated audio files
+backend/serviceAccountKey.json
+
+# Python virtual environment and venv files
+venv/
+ENV/
+.env
+__pycache__/
+*.py[cod]

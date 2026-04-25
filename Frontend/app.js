@@ -41,8 +41,13 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
     if (!file) return alert("Select a file first.");
     
     // Check format
-    if (file.type !== "audio/mpeg" && !file.name.endsWith('.mp3')) {
-        return alert("Please upload an MP3 file only.");
+    const allowedExtensions = ['.mp3', '.m4a', '.mpeg'];
+    const allowedTypes = ['audio/mpeg', 'audio/mp4', 'audio/x-m4a'];
+    const isValid = allowedTypes.includes(file.type) || 
+                    allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+
+    if (!isValid) {
+        return alert("Please upload an MP3, M4A, or MPEG file.");
     }
 
     // Check size (Limit: 10MB)
