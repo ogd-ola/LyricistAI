@@ -20,12 +20,29 @@
             <input type="file" id="audioUpload" accept="audio/mp3">
             <textarea id="lyricsInput" placeholder="Paste lyrics here..."></textarea>
             <button id="generateBtn">Generate Harmonies</button>
+
+            <div id="progressContainer" style="display:none; width: 100%; background: #333; margin: 10px 0;">
+                <div id="progressBar" style="width: 0%; height: 10px; background: #6200ee;"></div>
+                <p id="progressText" style="font-size: 12px; color: #bbb;">Uploading audio...</p>
+            </div>
         </section>
 
         <hr>
 
         <section class="mixer-interface">
-            <h2>Mixer & Solfege</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Mixer</h2>
+                <div class="master-controls">
+                    <button id="playAllBtn" class="secondary-btn">Play All</button>
+                    <button id="pauseAllBtn" class="secondary-btn">Pause All</button>
+                </div>
+            </div>
+
+            <div class="view-modes" style="margin: 10px 0;">
+                <button onclick="switchView('default')">Standard View</button>
+                <button onclick="switchView('sheet')">Sheet Music Mode</button>
+            </div>
+
             <div id="tracksContainer">
                 </div>
         </section>
@@ -37,27 +54,26 @@
             </div>
         </section>
     </div>
-    <script>
-        // Simple session management
-        document.addEventListener('DOMContentLoaded', () => {
-            const authNav = document.getElementById('authNav');
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (isLoggedIn) {
-                const email = localStorage.getItem('userEmail');
-                authNav.textContent = `Logout (${email})`;
-                authNav.href = '#';
-                authNav.onclick = () => {
-                    localStorage.clear();
-                    location.reload();
-                };
-            }
-        });
-    </script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-storage-compat.js"></script>
     <script src="config.js"></script>
+    <script>
+        // Firebase session management
+        firebase.auth().onAuthStateChanged((user) => {
+            const authNav = document.getElementById('authNav');
+            if (user) {
+                authNav.textContent = `Logout (${user.email})`;
+                authNav.onclick = () => firebase.auth().signOut().then(() => location.reload());
+            } else {
+                authNav.textContent = 'Sign In';
+                authNav.href = 'login.html';
+            }
+        });
+    </script>
 
     <script src="app.js"></script>
 </body>

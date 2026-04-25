@@ -57,3 +57,39 @@ button {
 }
 
 button:hover { background: #3700b3; }
+
+/* Progress Bar */
+#progressContainer {
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#progressBar {
+    transition: width 0.4s ease;
+}
+
+/* Track UI */
+.track-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #252525;
+    padding: 15px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+}
+
+.solfege-mini {
+    font-size: 12px;
+    color: #00ff41;
+    font-family: monospace;
+}
+
+/* Sheet Music Placeholder */
+.sheet-mode {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: 2px solid #000;
+    min-height: 200px;
+    font-family: 'Times New Roman', serif;
+}
