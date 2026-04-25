@@ -1,3 +1,5 @@
+//import { FIREBASE_CONFIG, CLOUDINARY_CONFIG } from './config.js';
+
 // Mock data structure to simulate what the Backend will return
 const mockResponse = {
     tracks: [
@@ -34,59 +36,71 @@ document.getElementById('pauseAllBtn').addEventListener('click', pauseAll);
 document.getElementById('generateBtn').addEventListener('click', async () => {
     const fileInput = document.getElementById('audioUpload');
     const file = fileInput.files[0];
+    const lyrics = document.getElementById('lyricsInput').value;
     const progressBar = document.getElementById('progressBar');
     const progressContainer = document.getElementById('progressContainer');
 
-    // VALIDATION
-    if (!file) return alert("Select a file first.");
+    if (!file || !currentUser) return alert("Please sign in and select a file!");
     
-    // Check format
+    // --- 1. Validation ---
     const allowedExtensions = ['.mp3', '.m4a', '.mpeg'];
     const allowedTypes = ['audio/mpeg', 'audio/mp4', 'audio/x-m4a'];
     const isValid = allowedTypes.includes(file.type) || 
                     allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
 
-    if (!isValid) {
-        return alert("Please upload an MP3, M4A, or MPEG file.");
-    }
+    if (!isValid) return alert("Please upload an MP3, M4A, or MPEG file.");
 
-    // Check size (Limit: 10MB)
     const maxSize = 10 * 1024 * 1024; 
-    if (file.size > maxSize) {
-        return alert("File is too large. Limit is 10MB.");
-    }
+    if (file.size > maxSize) return alert("File is too large. Limit is 10MB.");
 
-    if (!currentUser) return alert("Please sign in to generate harmonies!");
+    // --- 2. Cloudinary Config ---
+    // Replace these with your actual details from the Cloudinary Dashboard
+    const CLOUD_NAME = "dktsxxvkz"; 
+    const UPLOAD_PRESET = "lyricist_preset";
+    const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
 
-    // UI Feedback
     progressContainer.style.display = 'block';
     progressBar.style.width = '20%';
-    document.getElementById('progressText').innerText = "Uploading to cloud...";
+    document.getElementById('progressText').innerText = "Uploading to Cloudinary...";
     
     try {
-        // 1. Upload file to Firebase Storage
-        const storageRef = firebase.storage().ref(`users/${currentUser.uid}/uploads/${Date.now()}_${file.name}`);
-        const snapshot = await storageRef.put(file);
-        const audioUrl = await snapshot.ref.getDownloadURL();
+        // --- 3. Cloudinary Upload ---
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+
+        const response = await fetch(CLOUDINARY_URL, {
+            method: 'POST',
+            body: formData
+        });
+
+        const cloudData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(cloudData.error?.message || "Cloudinary upload failed");
+        }
+
+        const audioUrl = cloudData.secure_url;
+        console.log("Cloudinary Success! URL:", audioUrl);
 
         progressBar.style.width = '50%';
-        document.getElementById('progressText').innerText = "Starting AI Engine...";
+        document.getElementById('progressText').innerText = "Sending to AI Engine...";
 
-        // 2. Create the Firestore Job for the Backend to find
+        // --- 4. Firestore Job Creation ---
         const docRef = await firebase.firestore().collection("harmonyJobs").add({
             userId: currentUser.uid,
             originalAudio: audioUrl,
-            lyrics: document.getElementById('lyricsInput').value,
+            lyrics: lyrics,
             status: "processing",
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // 3. Wait for Backend to update this document
+        console.log("Firestore Job Created:", docRef.id);
         listenForChanges(docRef.id);
 
     } catch (error) {
-        console.error(error);
-        alert("Upload failed: " + error.message);
+        console.error("Process Failed:", error);
+        alert("Error: " + error.message);
         progressContainer.style.display = 'none';
     }
 });
