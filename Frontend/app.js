@@ -81,7 +81,6 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
         }
 
         const audioUrl = cloudData.secure_url;
-        console.log("Cloudinary Success! URL:", audioUrl);
 
         progressBar.style.width = '50%';
         document.getElementById('progressText').innerText = "Sending to AI Engine...";
@@ -95,7 +94,6 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        console.log("Firestore Job Created:", docRef.id);
         listenForChanges(docRef.id);
 
     } catch (error) {
@@ -107,15 +105,28 @@ document.getElementById('generateBtn').addEventListener('click', async () => {
 
 // --- 3. Job Tracking ---
 function listenForChanges(jobId) {
-    firebase.firestore().collection("harmonyJobs").doc(jobId).onSnapshot((doc) => {
+    // Store the unsubscribe function
+    const unsub = firebase.firestore().collection("harmonyJobs").doc(jobId).onSnapshot((doc) => {
         const data = doc.data();
-        if (data && data.status === "completed") {
+        if (!data) return;
+
+        // Feedback for 'working' status
+        if (data.status === "working") {
+            document.getElementById('progressBar').style.width = '70%';
+            document.getElementById('progressText').innerText = "AI is thinking...";
+        }
+
+        if (data.status === "completed") {
             document.getElementById('progressBar').style.width = '100%';
             document.getElementById('progressText').innerText = "Generation Complete!";
-            renderTracks(data.tracks); 
+            if (data.tracks && data.tracks.length > 0) {
+                renderTracks(data.tracks);
+                unsub(); // <--- STOP listening so the UI stays locked
+            }
         } else if (data && data.status === "error") {
             alert("AI Generation failed: " + data.message);
             document.getElementById('progressContainer').style.display = 'none';
+            unsub();
         }
     });
 }
@@ -125,7 +136,9 @@ function renderTracks(tracks) {
     const container = document.getElementById('tracksContainer');
     container.innerHTML = '';
 
-    tracks.forEach(track => {
+    tracks.forEach((track, index) => {
+        const safeId = `audio-track-${index}`; // Safe ID without spaces
+
         const row = document.createElement('div');
         row.className = 'track-row';
         row.innerHTML = `
@@ -133,10 +146,10 @@ function renderTracks(tracks) {
                 <span><strong>${track.name}</strong></span>
                 <div class="solfege-mini">${track.solfege}</div>
             </div>
-            <audio id="audio-${track.name}" src="${track.url}" controls></audio>
+            <audio id="${safeId}" src="${track.url}" controls></audio>
             <div class="track-btns">
-                <button onclick="toggleMute('audio-${track.name}')">Mute</button>
-                <button onclick="soloTrack('audio-${track.name}')">Solo</button>
+                <button onclick="toggleMute('${safeId}')">Mute</button>
+                <button onclick="soloTrack('${safeId}')">Solo</button>
             </div>
         `;
         container.appendChild(row);

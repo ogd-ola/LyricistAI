@@ -77,6 +77,9 @@ button:hover { background: #3700b3; }
     padding: 15px;
     margin-bottom: 8px;
     border-radius: 6px;
+    border: 1px solid #333;
+    transition: all 0.3s ease;
+    display: flex !important; /* Ensures visibility when injected */
 }
 
 .solfege-mini {
